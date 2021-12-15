@@ -1,15 +1,24 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "sbus.h"
 #include "hardware/pwm.h"
+#include "config.h"
+
+#if defined FLIGHT_FLYING_WING         
+    #include "flyingwing.h";
+#endif
 
 int main()
 {
     stdio_init_all();
-    SBUS_init();
-    const uint LED_PIN = PICO_DEFAULT_LED_PIN;
-    gpio_init(LED_PIN);
-    gpio_set_dir(LED_PIN, GPIO_OUT);
+    
+    #if defined RC_SBUS
+        SBUS_init(); 
+        int getChannel = SBUS_getChannel();
+    #endif
+
+    #if defined FLIGHT_FLYING_WING
+        
+    #endif
     while (true)
     {
         gpio_put(LED_PIN, 1);
