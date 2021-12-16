@@ -25,10 +25,12 @@ if (TARGET tinyusb_device)
    
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/lib)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/include)
+    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/flightmodel)
     add_executable(${PROJECT_NAME}
         src/main.c
         include/picoflight/config.h
     )
+    
     #libraries
     target_link_libraries(${PROJECT_NAME} PUBLIC
         pico_stdlib 
@@ -37,6 +39,7 @@ if (TARGET tinyusb_device)
         hardware_pio
         hardware_pwm
         sbus
+        flyingwing
     )
 
     pico_enable_stdio_usb(${PROJECT_NAME} 1)
