@@ -19,16 +19,14 @@ int main()
     #if defined FLIGHT_FLYING_WING
         
     #endif
+    #ifdef MOTOR1
+            pwm_set_enabled(slice_num, true);
+            gpio_set_function(MOTOR1, GPIO_FUNC_PWM);
+            uint slice_num = pwm_gpio_to_slice_num(MOTOR1);
+    #endif
     while (true)
-    
+        int throttle = 0;
     {
-
-        printf("test");
-        printf("channel 12: %d \n ", SBUS_getChannel(12));
-        printf("channel 16: %d", SBUS_getChannel(16)); /*
-        /*while (1)
-        {
-            // tight_loop_contents();
-        }*/
+        throttle = getChannel(THROTTLE);
     }
 }

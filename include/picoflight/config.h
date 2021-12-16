@@ -12,3 +12,4 @@
 #define THROTTLE 2
 #define YAW 3
 
+#define MOTOR1 10
