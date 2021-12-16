@@ -1,6 +1,5 @@
 #pragma once
 #include "sbus.h"
-#include "flyingwing.h"
 
 
 #define RC_SBUS

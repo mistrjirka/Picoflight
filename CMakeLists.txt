@@ -25,11 +25,12 @@ if (TARGET tinyusb_device)
    
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/lib)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/include)
-    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/flightmodel)
+    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/src/flightmodel)
     add_executable(${PROJECT_NAME}
+        
         src/main.c
-        include/picoflight/config.h
     )
+    target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include/picoflight)
     
     #libraries
     target_link_libraries(${PROJECT_NAME} PUBLIC

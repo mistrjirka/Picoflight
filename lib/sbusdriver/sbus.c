@@ -108,10 +108,6 @@ int SBUS_getChannel(int channel)
         return 0;
     }
 }
-int[18] SBUS_getChannels()
-{
-    return channels;
-}
 
 int SBUS_init()
 {
