@@ -3,6 +3,7 @@
 #include "hardware/pwm.h"
 #include "config.h"
 
+
 #if defined FLIGHT_FLYING_WING         
     #include "flyingwing.h"
 #endif
@@ -13,20 +14,26 @@ int main()
     
     #if defined RC_SBUS
         SBUS_init(); 
-        int getChannel = SBUS_getChannel();
+        int (*getChannel)(int) = &SBUS_getChannel;
+    #else
+        SBUS_init();
+        int (*getChannel)(int) = &SBUS_getChannel;
     #endif
 
     #if defined FLIGHT_FLYING_WING
         
     #endif
     #ifdef MOTOR1
-            pwm_set_enabled(slice_num, true);
-            gpio_set_function(MOTOR1, GPIO_FUNC_PWM);
-            uint slice_num = pwm_gpio_to_slice_num(MOTOR1);
-    #endif
-    while (true)
-        int throttle = 0;
-    {
-        throttle = getChannel(THROTTLE);
-    }
+        init_ESC_PWM(MOTOR1, DIVIDER, STOP_PULSE_PWM, MIN_PULSE_PWM, MAX_PULSE_PWM, IDLE_PULSE_PWM, ESC_CALIB_LOW, ESC_CALIB_HIGH);
+#endif
+    int throttle = 0;
+
+        while (true)
+        {
+
+#ifdef MOTOR1
+            throttle = (*getChannel)(THROTTLE);
+
+#endif
+        }
 }

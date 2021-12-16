@@ -22,12 +22,10 @@ endif()
 
 # create map/bin/hex file etc.
 if (TARGET tinyusb_device)
-   
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/lib)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/include)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/src/flightmodel)
     add_executable(${PROJECT_NAME}
-        
         src/main.c
     )
     target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include/picoflight)
@@ -41,6 +39,7 @@ if (TARGET tinyusb_device)
         hardware_pwm
         sbus
         flyingwing
+        esc
     )
 
     pico_enable_stdio_usb(${PROJECT_NAME} 1)
