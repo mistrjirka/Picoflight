@@ -37,8 +37,9 @@ void writeESCs(int value)
     {
         printf("Motor: %d\n", i);
         int esc = escs[i];
-        int chann = pwm_gpio_to_slice_num(esc);
-        pwm_set_chan_level(escs[i], chann, value);
+        int chann = pwm_gpio_to_channel(esc);
+        int slice  = pwm_gpio_to_slice_num(esc;
+        pwm_set_chan_level(slice, chann, value);
     }
     printf("end of writing\n");
 }
