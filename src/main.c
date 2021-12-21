@@ -11,8 +11,11 @@
 int main()
 {
     stdio_init_all();
-    
-    #if defined RC_SBUS
+    sleep_ms(6000);
+    printf("starting init\n");
+    init_ESC_PWM(MOTOR1, DIVIDER, STOP_PULSE_PWM, MIN_PULSE_PWM, MAX_PULSE_PWM, IDLE_PULSE_PWM, ESC_CALIB_LOW, ESC_CALIB_HIGH);
+    int throttle = 0;
+#if defined RC_SBUS
         SBUS_init(); 
         int (*getChannel)(int) = &SBUS_getChannel;
     #else
@@ -23,17 +26,20 @@ int main()
     #if defined FLIGHT_FLYING_WING
         
     #endif
-    #ifdef MOTOR1
-        init_ESC_PWM(MOTOR1, DIVIDER, STOP_PULSE_PWM, MIN_PULSE_PWM, MAX_PULSE_PWM, IDLE_PULSE_PWM, ESC_CALIB_LOW, ESC_CALIB_HIGH);
-#endif
-    int throttle = 0;
+    
 
-        while (true)
-        {
+    while (true)
+    {
+        #ifdef MOTOR1   
+            if (ready)
+            {
+            
+                throttle = (*getChannel)(THROTTLE);
+                writeESCs(throttle);
+                //printf("%d\n", throttle);
+                sleep_ms(1000);
+            }
+        #endif
+    }
 
-#ifdef MOTOR1
-            throttle = (*getChannel)(THROTTLE);
-
-#endif
-        }
 }

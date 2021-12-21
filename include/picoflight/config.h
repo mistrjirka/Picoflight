@@ -7,10 +7,10 @@
 
 #define RC_CHANNELS 
 
-#define ROLL 0
-#define PITCH 1
-#define THROTTLE 2
-#define YAW 3
+#define ROLL 1
+#define PITCH 2
+#define THROTTLE 3
+#define YAW 4
 
 #define MOTOR1 10
 #define DIVIDER 125 // divider 125mhz
