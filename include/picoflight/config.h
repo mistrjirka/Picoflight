@@ -14,7 +14,7 @@
 
 #define MOTOR1 10
 #define DIVIDER 125 // divider 125mhz
-#define MIN_PULSE_PWM  1000
+#define MIN_PULSE_PWM  1060
 #define MAX_PULSE_PWM  1800
 #define STOP_PULSE_PWM 1000
 #define IDLE_PULSE_PWM 1060
