@@ -15,19 +15,6 @@ int escs[5] = {};
 int esc_length = 0;
 bool ready = false;
 
-// for now analog, todo: blheli (probably with pio)
-void calibrateESCs(int pin)
-{
-    writeESCs(0, true);
-    sleep_ms(2000);
-    printf("starting calibration\n");
-    writeESCs(esc_calib_high, true);
-    sleep_ms(2500);
-    writeESCs(esc_calib_low, true);
-    sleep_ms(3000);
-    printf("ending calibration\n");
-}
-
 void writeESCs(int value, bool calibration)
 {
     printf("writing\n");
@@ -44,12 +31,27 @@ void writeESCs(int value, bool calibration)
         printf("Motor: %d\n", i);
         int esc = escs[i];
         int chann = pwm_gpio_to_channel(esc);
-        int slice  = pwm_gpio_to_slice_num(esc);
+        int slice = pwm_gpio_to_slice_num(esc);
         printf("val: %d\n", value);
         pwm_set_chan_level(slice, chann, value);
     }
     printf("end of writing\n");
 }
+
+// for now analog, todo: blheli (probably with pio)
+void calibrateESCs(int pin)
+{
+    writeESCs(0, true);
+    sleep_ms(2000);
+    printf("starting calibration\n");
+    writeESCs(esc_calib_high, true);
+    sleep_ms(2500);
+    writeESCs(esc_calib_low, true);
+    sleep_ms(3000);
+    printf("ending calibration\n");
+}
+
+
 int init_ESC_PWM(int pin, int divider_in, int stop_pulse_in, int min_pulse_in, int max_pulse_in, int idle_pulse_in, int esc_calib_low_in, int esc_calib_high_in)
 {
     printf("starting init\n ");
