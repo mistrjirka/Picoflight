@@ -28,8 +28,10 @@ uint8_t CRSF_bufferValidity[1] = {0};
 bool CRSF_sync = false;
 bool CRSF_lost_frame = false, CRSF_failsafe = false;
 
-uint8_t bufferRX[64];
+uint8_t CRSF_bufferRX[64];
 int CRSF_channels[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+crsfFrameDef_t Frame;
 
 void CRSF_on_uart_rx()
 {
@@ -41,8 +43,32 @@ void CRSF_on_uart_rx()
     {
 
         uint8_t ch = uart_getc(CRSF_UART_ID);
-        printf("%x \n", ch);
-        
+        printf("%x\n", ch);
+
+        if (ch == CRSF_SYNC_BYTE)
+        {
+            CRSF_chars_rxed = 0;
+            CRSF_sync = true;
+        }
+        if ((CRSF_sync && CRSF_chars_rxed < 2) || (!CRSF_sync))
+        {
+            Frame.frameLength = 5;
+        }
+        if (CRSF_sync)
+        {
+            CRSF_bufferRX[CRSF_chars_rxed] = ch;
+            CRSF_chars_rxed++;
+            if(CRSF_chars_rxed == 2){ // packet length
+                Frame.frameLength = ch;
+                printf("actual packet length = %d\n", ch);
+                printf("Frame length: %d\n", Frame.frameLength);
+            }
+        }
+    }
+    if (CRSF_sync && (CRSF_chars_rxed == Frame.frameLength-1))
+    {
+        CRSF_chars_rxed = 0;
+        CRSF_sync = false;
     }
 }
 
@@ -80,7 +106,7 @@ int CRSF_init()
     irq_set_exclusive_handler(UART_IRQ, CRSF_on_uart_rx);
     irq_set_enabled(UART_IRQ, true);
     printf("hello there\n");
-
+    Frame.frameLength = 5;
     // Now enable the UART to send interrupts - RX only
     uart_set_irq_enables(CRSF_UART_ID, true, false);
     printf("enabled\n");
