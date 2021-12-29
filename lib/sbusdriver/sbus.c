@@ -119,7 +119,7 @@ int SBUS_init()
     uart_set_hw_flow(UART_ID, false, false);
 
     // Set our data format
-    uart_set_format(uart1, DATA_BITS, STOP_BITS, PARITY);
+    uart_set_format(UART_ID, DATA_BITS, STOP_BITS, PARITY);
 
     // Turn off FIFO's - we want to do this character by character
     uart_set_fifo_enabled(UART_ID, false);

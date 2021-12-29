@@ -38,6 +38,7 @@ if (TARGET tinyusb_device)
         hardware_pio
         hardware_pwm
         sbus
+        crsf
         flyingwing
         esc
     )

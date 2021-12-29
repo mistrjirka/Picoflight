@@ -2,7 +2,7 @@
 #include "pico/stdlib.h"
 #include "hardware/pwm.h"
 #include "esc.h"
-
+#define MOTORS 6
 int stop_pulse = 1000;
 int min_pulse = 1060;
 int max_pulse = 1798;
@@ -11,7 +11,7 @@ int esc_calib_low = 1000;
 int esc_calib_high = 2000;
 int idle_pulse = 1065;
 int divider = 125;
-int escs[5] = {};
+int escs[MOTORS] = {};
 int esc_length = 0;
 bool ready = false;
 
@@ -71,10 +71,12 @@ int init_ESC_PWM(int pin, int divider_in, int stop_pulse_in, int min_pulse_in, i
     pwm_set_wrap(slice_num, 2049);
     int chan = pwm_gpio_to_channel(pin);
     pwm_set_enabled(slice_num, true);
-
-    escs[esc_length] = pin;
-    esc_length++;
-    calibrateESCs(pin);
+    if (esc_length < MOTORS - 1){
+        escs[esc_length] = pin;
+        esc_length++;
+        calibrateESCs(pin);
+    }
+     
     ready = true;
     printf("end of init\n");
 }

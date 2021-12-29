@@ -13,14 +13,8 @@ int pitch_chan = 2;
 int yaw_chan = 4;
 int updatefrequency = 20;
 
-void updateControls(
-    int channels[],
-    int throttle_chan,
-    int roll_chan,
-    int pitch_chan,
-    int yaw_chan,
-    int arm_chan)
-{
+repeating_timer_callback_t updateControls()
+{ 
 }
 
 void initModel(
@@ -28,16 +22,16 @@ void initModel(
     int roll_chan_par,
     int pitch_chan_par,
     int yaw_chan_par,
-    int *channelFunction,
+    int (*channelFunction)(int),
     int *channelsPointer[],
-    void *initMotorsPointer,
-    void *setAllMotorsPointer,
+    void (*initMotorsPointer)(void),
+    void (*setAllMotorsPointer)(void),
     int updatefrequency_par)
 {
-    *channels = &channelsPointer;
-    getChannel = &channelFunction;
-    initMotors = &initMotorsPointer;
-    setAllMotors = &setAllMotorsPointer;
+    *channels = *channelsPointer;
+    getChannel = *channelFunction;
+    initMotors = initMotorsPointer;
+    setAllMotors = setAllMotorsPointer;
 
     throttle_chan = throttle_chan_par;
     roll_chan = roll_chan_par;
