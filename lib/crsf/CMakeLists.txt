@@ -7,6 +7,7 @@ target_link_libraries(crsf
     pico_stdlib 
     pico_multicore
     hardware_uart
+    hardware_timer
     hardware_pio
 )
 

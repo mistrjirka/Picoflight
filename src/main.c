@@ -42,8 +42,10 @@ int main()
 #if defined FLIGHT_FLYING_WING
 
 #endif
-    printf("init completed");
-     //irq_set_exclusive_handler(TIMER_IRQ_0, );
+    printf("init completed\n");
+    printf("restarted\n");
+
+    // irq_set_exclusive_handler(TIMER_IRQ_0, );
     while (true)
     {
         tight_loop_contents();

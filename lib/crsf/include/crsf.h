@@ -15,6 +15,17 @@
 #define CRSF_CHANNEL_VALUE_2000 1792
 #define CRSF_CHANNEL_VALUE_MAX 1811
 #define CRSF_SYNC_BYTE 0XC8 // this is the ADDRESS, this byte is the first byte of the packet
+#define CRSF_TIME_NEEDED_PER_FRAME_US 1100 // us ms + 400 ms for potential ad-hoc request
+#define CRSF_TIME_BETWEEN_FRAMES_US 6667   // At fastest, frames are sent by the transmitter every 6.667 milliseconds, 150 Hz
+
+#define CRSF_DIGITAL_CHANNEL_MIN 172
+#define CRSF_DIGITAL_CHANNEL_MAX 1811
+
+#define CRSF_PAYLOAD_OFFSET offsetof(crsfFrameDef_t, type)
+
+#define CRSF_LINK_STATUS_UPDATE_TIMEOUT_US 250000 // 250ms, 4 Hz mode 1 telemetry
+
+#define CRSF_FRAME_ERROR_COUNT_THRESHOLD 100
 
 #define CRSF_MAX_CHANNEL 16
 #define CRSFV3_MAX_CHANNEL 24
