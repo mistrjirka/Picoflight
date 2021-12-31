@@ -146,5 +146,5 @@ typedef struct crsfLink_s
     uint8_t RSSI_downlink;
     uint8_t LQ_downlink;
     uint8_t SNR_downlink;
-};
+} crsfLink_t;
 #endif
