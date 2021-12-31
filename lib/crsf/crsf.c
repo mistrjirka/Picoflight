@@ -33,13 +33,13 @@ int CRSF_channels[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 int columnLength = 5;
 int columnIndex = 0;
 
-absolute_time_t last_byte_time; // timestamp of last byte we received
+absolute_time_t last_byte_time;    // timestamp of last byte we received
 absolute_time_t current_byte_time; // timestamp of current byte we received, we then compare it with last_byte_time
-absolute_time_t framestart; // timestamp of start of frame it will be compared to the current time (not variable), to check for timeout
-bool first_byte_rx = false; // when we run the CRSF_on_uart_rx there will not be any information about last_byte_time, so we need to wait for one cycle
-int64_t time_diff = 0; // time difference between last_byte_time and current_byte_time
-crsfFrameDef_t Frame; // current crsf Frame
-
+absolute_time_t framestart;        // timestamp of start of frame it will be compared to the current time (not variable), to check for timeout
+bool first_byte_rx = false;        // when we run the CRSF_on_uart_rx there will not be any information about last_byte_time, so we need to wait for one cycle
+int64_t time_diff = 0;             // time difference between last_byte_time and current_byte_time
+crsfFrameDef_t Frame;              // current crsf Frame
+crsfLink_t LinkStatus;
 void CRSF_on_uart_rx() // IRQ handler, called when there are data on UART port
 {
     while (uart_is_readable(CRSF_UART_ID)) // while we can read UART data we read it from
@@ -47,34 +47,36 @@ void CRSF_on_uart_rx() // IRQ handler, called when there are data on UART port
 
         uint8_t ch = uart_getc(CRSF_UART_ID); // this will read character from uart and save it to ch. This function is mandatory in this loop, without this the loop will become infinite
 
-        current_byte_time = get_absolute_time(); // get current byte time
+        current_byte_time = get_absolute_time();                              // get current byte time
         time_diff = absolute_time_diff_us(last_byte_time, current_byte_time); // compare the current byte time with the last byte time
-        last_byte_time = current_byte_time; // after we get the difference of two times, we save the current byte time to the last byte time
+        last_byte_time = current_byte_time;                                   // after we get the difference of two times, we save the current byte time to the last byte time
 
-        //printf("byte: %x, latency: %d\n", ch, time_diff); //debug function to printout the byte and latency
+        // printf("byte: %x, latency: %d\n", ch, time_diff); //debug function to printout the byte and latency
         if (time_diff > CRSF_TIME_BETWEEN_FRAMES_US && ch == CRSF_SYNC_BYTE) // if the time between last byte and current byte time is greater than minimum time between frames we will call that start of packet, and if it the character matches with flightcontroller address we assume this is for us
         {
-            if(CRSF_sync){ //if new packet started but we were the previous packet wasn't read completely we will call that desync 
+            if (CRSF_sync)
+            { // if new packet started but we were the previous packet wasn't read completely we will call that desync
                 printf("desync 3, %d\n", CRSF_chars_rxed);
             }
             CRSF_chars_rxed = 0; // set current byte index to 0
 
-            CRSF_sync = true; // set sync flag to true
+            CRSF_sync = true;         // set sync flag to true
             Frame.deviceAddress = ch; // set device address (probably completly uneccesary)
         }
 
         if (CRSF_sync) // if we are synced we will run this code
         {
-            if(CRSF_chars_rxed == 0){ // if this is first byte we will save time
+            if (CRSF_chars_rxed == 0)
+            { // if this is first byte we will save time
                 framestart = current_byte_time;
             }
             if (CRSF_chars_rxed < 1) // if we hadn't get the length of frame yet, we will set it to some arbitrary value
             {
-                Frame.frameLength = 5; 
+                Frame.frameLength = 5;
             }
 
             if (CRSF_chars_rxed == 1) // This is the packet length byte
-            { 
+            {
 
                 if (ch > CRSF_DATA_LENGTH || ch < 4) // if packet length is longer than maximum packet length or it is too short we will set it to desync and set byte index to 0 to start from scratch
                 {
@@ -83,7 +85,7 @@ void CRSF_on_uart_rx() // IRQ handler, called when there are data on UART port
                 }
                 else
                 { // packet as long as it should be
-        
+
                     Frame.frameLength = ch;
                 }
             }
@@ -93,10 +95,10 @@ void CRSF_on_uart_rx() // IRQ handler, called when there are data on UART port
 
                 Frame.type = ch;
             }
-           
-            if (CRSF_chars_rxed < CRSF_DATA_LENGTH)
+
+            if (CRSF_chars_rxed < CRSF_DATA_LENGTH && CRSF_chars_rxed > 2)
             { // if the CRSF_chars_rxed isn't larger than maximum length value we will save byte
-                CRSF_bufferRX[CRSF_chars_rxed] = ch;
+                Frame.payload[CRSF_chars_rxed-3] = ch;
             }
 
             else if (CRSF_chars_rxed > CRSF_DATA_LENGTH)
@@ -106,15 +108,48 @@ void CRSF_on_uart_rx() // IRQ handler, called when there are data on UART port
             }
 
             CRSF_chars_rxed++;
-            
         }
         if (CRSF_chars_rxed == (Frame.frameLength - 1) && CRSF_sync)
-        { // if we are synced and the byte index matches the framelength, We have a full packet. nice
-            printf("\nFrame length: %d\n", Frame.frameLength); //debug
-            printf("bytes in packet: %d\n", CRSF_chars_rxed + 1); // debug
-            CRSF_chars_rxed = 0; //reset so we can start again
-            CRSF_sync = false;   // reset so we can start again
+        {                                                         // if we are synced and the byte index matches the framelength, We have a full packet. nice
+            //printf("\nFrame length: %d\n", Frame.frameLength);    // debug
+            //printf("bytes in packet: %d\n", CRSF_chars_rxed + 1); // debug
+            CRSF_chars_rxed = 0;                                  // reset so we can start again
+            CRSF_sync = false;                                    // reset so we can start again
+            switch (Frame.type)
+            {
+            case CRSF_FRAMETYPE_RC_CHANNELS_PACKED:
+            case CRSF_FRAMETYPE_SUBSET_RC_CHANNELS_PACKED:
+                //if this is rc frame
+                //printf("RC frame received\n");
+                
+                break;
+
+            case CRSF_FRAMETYPE_LINK_STATISTICS:
             
+                // if to FC and 10 bytes + CRSF_FRAME_ORIGIN_DEST_SIZE
+
+                printf("statistics frame received\n");
+                LinkStatus.RSSI_uplink_a1 = Frame.payload[0]; // antenna 1 uplink RSSI;
+                LinkStatus.RSSI_uplink_a2 = Frame.payload[1];  // antenna 2 uplink RSSI;
+                LinkStatus.LQ_uplink = Frame.payload[2];       // antenna 1 uplink RSSI;
+                LinkStatus.SNR_uplink = Frame.payload[3];      // antenna 1 uplink RSSI;
+                LinkStatus.DIVERSITY_ant = Frame.payload[4];
+                LinkStatus.RF_mode = Frame.payload[5];
+                LinkStatus.TXPOW_uplink = Frame.payload[6];
+                LinkStatus.RSSI_downlink = Frame.payload[7];
+                LinkStatus.LQ_downlink = Frame.payload[8];
+                LinkStatus.SNR_downlink = Frame.payload[9];
+                /*printf("RSSI a1: %d\n", RSSI_uplink_a1);
+                printf("RSSI a2: %d\n", RSSI_uplink_a2);
+                printf("LQ up: %d\n", LQ_uplink);
+                printf("SNR up: %d\n", SNR_uplink);
+                printf("DIVERSITY a: %d\n", DIVERSITY_ant);
+                printf("RF mode: %d\n", RF_mode);
+                printf("TXPOW up: %d\n", TXPOW_uplink);*/
+                break;
+            default:
+                break;
+            }
         }
     }
 }
@@ -137,7 +172,7 @@ int CRSF_init()
 
     gpio_set_function(CRSF_UART_RX_PIN, GPIO_FUNC_UART);
     gpio_set_function(CRSF_UART_TX_PIN, GPIO_FUNC_UART);
-    //gpio_set_inover(CRSF_UART_RX_PIN, GPIO_OVERRIDE_INVERT);
+    // gpio_set_inover(CRSF_UART_RX_PIN, GPIO_OVERRIDE_INVERT);
 
     uart_set_hw_flow(CRSF_UART_ID, false, false);
 

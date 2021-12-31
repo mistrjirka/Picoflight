@@ -134,4 +134,17 @@ typedef struct crsfFrameDef_s
     uint8_t payload[CRSF_PAYLOAD_SIZE_MAX + 1]; // +1 for CRC at end of payload
 } crsfFrameDef_t;
 
+typedef struct crsfLink_s
+{
+    uint8_t RSSI_uplink_a1;
+    uint8_t RSSI_uplink_a2;
+    uint8_t LQ_uplink;
+    uint8_t SNR_uplink;
+    uint8_t DIVERSITY_ant;
+    uint8_t RF_mode;
+    uint8_t TXPOW_uplink;
+    uint8_t RSSI_downlink;
+    uint8_t LQ_downlink;
+    uint8_t SNR_downlink;
+};
 #endif
