@@ -63,6 +63,7 @@ bool CRSF_failsafe;
 bool CRSF_lost_frame;
 extern int CRSF_init();
 extern int CRSF_getChannel();
+extern int CRSF_channelsLength = 16;
 bool CRSF_sync;
 
 enum CRSFDataOffset
@@ -147,4 +148,7 @@ typedef struct crsfLink_s
     uint8_t LQ_downlink;
     uint8_t SNR_downlink;
 } crsfLink_t;
+
+
+
 #endif

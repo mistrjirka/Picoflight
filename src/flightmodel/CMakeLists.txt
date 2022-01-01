@@ -5,4 +5,5 @@ target_link_libraries(flyingwing
     pico_stdlib 
     pico_multicore
     hardware_timer
+    picoservo
 )

@@ -41,6 +41,7 @@ if (TARGET tinyusb_device)
         crsf
         flyingwing
         esc
+        
     )
 
     pico_enable_stdio_usb(${PROJECT_NAME} 1)

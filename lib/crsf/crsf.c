@@ -40,6 +40,30 @@ bool first_byte_rx = false;        // when we run the CRSF_on_uart_rx there will
 int64_t time_diff = 0;             // time difference between last_byte_time and current_byte_time
 crsfFrameDef_t Frame;              // current crsf Frame
 crsfLink_t LinkStatus;
+
+struct crsfPayloadRcChannelsPacked_s // from betaflight
+{
+    // 176 bits of data (11 bits per channel * 16 channels) = 22 bytes.
+    // the ": 11" means the number is 11 bit. How? or what it means? Idk
+    unsigned int chan0 : 11;
+    unsigned int chan1 : 11;
+    unsigned int chan2 : 11;
+    unsigned int chan3 : 11;
+    unsigned int chan4 : 11;
+    unsigned int chan5 : 11;
+    unsigned int chan6 : 11;
+    unsigned int chan7 : 11;
+    unsigned int chan8 : 11;
+    unsigned int chan9 : 11;
+    unsigned int chan10 : 11;
+    unsigned int chan11 : 11;
+    unsigned int chan12 : 11;
+    unsigned int chan13 : 11;
+    unsigned int chan14 : 11;
+    unsigned int chan15 : 11;
+} __attribute__((__packed__));
+typedef struct crsfPayloadRcChannelsPacked_s crsfPayloadRcChannelsPacked_t; // from betaflight
+
 void CRSF_on_uart_rx() // IRQ handler, called when there are data on UART port
 {
     while (uart_is_readable(CRSF_UART_ID)) // while we can read UART data we read it from
@@ -109,7 +133,7 @@ void CRSF_on_uart_rx() // IRQ handler, called when there are data on UART port
 
             CRSF_chars_rxed++;
         }
-        if (CRSF_chars_rxed == (Frame.frameLength - 1) && CRSF_sync)
+        if (CRSF_chars_rxed == (Frame.frameLength + 2) && CRSF_sync)
         {                                                         // if we are synced and the byte index matches the framelength, We have a full packet. nice
             //printf("\nFrame length: %d\n", Frame.frameLength);    // debug
             //printf("bytes in packet: %d\n", CRSF_chars_rxed + 1); // debug
@@ -118,17 +142,45 @@ void CRSF_on_uart_rx() // IRQ handler, called when there are data on UART port
             switch (Frame.type)
             {
             case CRSF_FRAMETYPE_RC_CHANNELS_PACKED:
-            case CRSF_FRAMETYPE_SUBSET_RC_CHANNELS_PACKED:
                 //if this is rc frame
-                //printf("RC frame received\n");
-                
+                printf("RC frame received\n");
+                const crsfPayloadRcChannelsPacked_t *const rcChannels = (crsfPayloadRcChannelsPacked_t *)&Frame.payload;
+                uint8_t channelScale = CRSF_RC_CHANNEL_SCALE_LEGACY;
+                CRSF_channels[0] = rcChannels->chan0;
+                CRSF_channels[1] = rcChannels->chan1;
+                CRSF_channels[2] = rcChannels->chan2;
+                CRSF_channels[3] = rcChannels->chan3;
+                CRSF_channels[4] = rcChannels->chan4;
+                CRSF_channels[5] = rcChannels->chan5;
+                CRSF_channels[6] = rcChannels->chan6;
+                CRSF_channels[7] = rcChannels->chan7;
+                CRSF_channels[8] = rcChannels->chan8;
+                CRSF_channels[9] = rcChannels->chan9;
+                CRSF_channels[10] = rcChannels->chan10;
+                CRSF_channels[11] = rcChannels->chan11;
+                CRSF_channels[12] = rcChannels->chan12;
+                CRSF_channels[13] = rcChannels->chan13;
+                CRSF_channels[14] = rcChannels->chan14;
+                CRSF_channels[15] = rcChannels->chan15;
+                printf("Channel 1: %d\n", CRSF_channels[0]);
+                printf("Channel 2: %d\n", CRSF_channels[1]);
+                printf("Channel 3: %d\n", CRSF_channels[2]);
+                printf("Channel 4: %d\n", CRSF_channels[3]);
+                printf("Channel 5: %d\n", CRSF_channels[4]);
+                printf("Channel 6: %d\n", CRSF_channels[5]);
+                printf("Channel 7: %d\n", CRSF_channels[6]);
+                printf("Channel 8: %d\n", CRSF_channels[7]);
+                printf("Channel 9: %d\n", CRSF_channels[8]);
+                printf("Channel 10: %d\n", CRSF_channels[9]);
+                printf("Channel 11: %d\n", CRSF_channels[10]);
                 break;
-
+            case CRSF_FRAMETYPE_SUBSET_RC_CHANNELS_PACKED:
+                break;
             case CRSF_FRAMETYPE_LINK_STATISTICS:
-            
+
                 // if to FC and 10 bytes + CRSF_FRAME_ORIGIN_DEST_SIZE
 
-                printf("statistics frame received\n");
+                //printf("statistics frame received\n");
                 LinkStatus.RSSI_uplink_a1 = Frame.payload[0]; // antenna 1 uplink RSSI;
                 LinkStatus.RSSI_uplink_a2 = Frame.payload[1];  // antenna 2 uplink RSSI;
                 LinkStatus.LQ_uplink = Frame.payload[2];       // antenna 1 uplink RSSI;
@@ -139,13 +191,20 @@ void CRSF_on_uart_rx() // IRQ handler, called when there are data on UART port
                 LinkStatus.RSSI_downlink = Frame.payload[7];
                 LinkStatus.LQ_downlink = Frame.payload[8];
                 LinkStatus.SNR_downlink = Frame.payload[9];
-                /*printf("RSSI a1: %d\n", RSSI_uplink_a1);
-                printf("RSSI a2: %d\n", RSSI_uplink_a2);
-                printf("LQ up: %d\n", LQ_uplink);
-                printf("SNR up: %d\n", SNR_uplink);
-                printf("DIVERSITY a: %d\n", DIVERSITY_ant);
-                printf("RF mode: %d\n", RF_mode);
-                printf("TXPOW up: %d\n", TXPOW_uplink);*/
+
+
+                /*printf("RSSI a1: %d\n", LinkStatus.RSSI_uplink_a1);
+                printf("RSSI a2: %d\n", LinkStatus.RSSI_uplink_a2);
+                printf("LQ up: %d\n", LinkStatus.LQ_uplink);
+                printf("SNR up: %d\n", LinkStatus.SNR_uplink);
+                printf("DIVERSITY a: %d\n", LinkStatus.DIVERSITY_ant);
+                printf("RF mode: %d\n", LinkStatus.RF_mode);
+                printf("TXPOW up: %d\n", LinkStatus.TXPOW_uplink);
+                printf("RSSI downlink: %d\n", LinkStatus.RSSI_downlink);
+                printf("LQ Downlink: %d\n", LinkStatus.LQ_downlink);
+                printf("SNR Downlink: %d\n", LinkStatus.SNR_downlink);
+                printf("CRC:  %d\n", Frame.payload[10]);*/
+
                 break;
             default:
                 break;

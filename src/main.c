@@ -21,31 +21,35 @@ int main()
     sleep_ms(1000);
     printf("hello there\n");
     sleep_ms(1000);
+    
 
 #ifdef MOTOR1
 
-    init_ESC_PWM(MOTOR1, DIVIDER, STOP_PULSE_PWM, MIN_PULSE_PWM, MAX_PULSE_PWM, IDLE_PULSE_PWM, ESC_CALIB_LOW, ESC_CALIB_HIGH);
+        init_ESC_PWM(MOTOR1, DIVIDER, STOP_PULSE_PWM, MIN_PULSE_PWM, MAX_PULSE_PWM, IDLE_PULSE_PWM, ESC_CALIB_LOW, ESC_CALIB_HIGH);
+        void (*setAllMotors)(int) = &writeESCs;
 #endif
-    int throttle = 0;
-    int mappedThrottle = 0;
+        int throttle = 0;
+        int mappedThrottle = 0;
 #if defined RC_SBUS
     SBUS_init();
     int (*getChannel)(int) = &SBUS_getChannel;
 #elif defined RC_CRSF
     CRSF_init();
-    //int (*getChannel)(int) = &CRSF_getChannel;
+    int (*getChannel)(int) = &CRSF_getChannel;
+    int *channels[] = &CRSF_channels;
+    int channelsLength = CRSF_channelsLength;
 #else
     SBUS_init();
     int (*getChannel)(int) = &SBUS_getChannel;
 #endif
 
 #if defined FLIGHT_FLYING_WING
-
+    initModel(THROTTLE, ROLL, PITCH, YAW, *getChannel, *channels, channelsLength, &*setAllMotors, UPDATE_FREQUENCY);
 #endif
     printf("init completed\n");
     printf("restarted\n");
 
-    // irq_set_exclusive_handler(TIMER_IRQ_0, );
+    // 
     while (true)
     {
         tight_loop_contents();
@@ -58,7 +62,6 @@ sleep_ms(20);*/
 
             throttle = (*getChannel)(THROTTLE);
             mappedThrottle = mapThrottle(throttle, 172, 1810, 1000, 1800);
-            writeESCs(mappedThrottle, false);
             //printf("%d\n", throttle);
             sleep_ms(20);
         }

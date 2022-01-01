@@ -5,7 +5,6 @@
 
 int (*getChannel)(int);
 int *channels[];
-void (*initMotors)(void);
 void (*setAllMotors)(void);
 int throttle_chan = 3;
 int roll_chan = 1;
@@ -14,7 +13,8 @@ int yaw_chan = 4;
 int updatefrequency = 20;
 
 repeating_timer_callback_t updateControls()
-{ 
+{
+    
 }
 
 void initModel(
@@ -24,13 +24,12 @@ void initModel(
     int yaw_chan_par,
     int (*channelFunction)(int),
     int *channelsPointer[],
-    void (*initMotorsPointer)(void),
+    int channelsLength,
     void (*setAllMotorsPointer)(void),
     int updatefrequency_par)
 {
     *channels = *channelsPointer;
     getChannel = *channelFunction;
-    initMotors = initMotorsPointer;
     setAllMotors = setAllMotorsPointer;
 
     throttle_chan = throttle_chan_par;
@@ -41,6 +40,6 @@ void initModel(
     updatefrequency = updatefrequency_par;
 
     struct repeating_timer timer;
-    add_repeating_timer_ms(updatefrequency, updateControls, NULL, &timer);
+    add_repeating_timer_ms((1/updatefrequency)*1000, updateControls, NULL, &timer);
 }
 

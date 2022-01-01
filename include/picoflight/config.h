@@ -16,7 +16,9 @@
 #define THROTTLE 3
 #define YAW 4
 
-//#define MOTOR1 10
+#define UPDATE_FREQUENCY 50 // hz
+
+#define MOTOR1 10
 #define DIVIDER 125 // divider 125mhz
 #define MIN_PULSE_PWM  1060
 #define MAX_PULSE_PWM  1800
