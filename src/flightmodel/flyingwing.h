@@ -6,9 +6,9 @@ void initModel(
     int pitch_chan_par,
     int yaw_chan_par,
     int (*channelFunction)(int),
-    int *channelsPointer[],
+    int channelsPointer[],
     int channelsLength,
-    void (*setAllMotorsPointer)(void),
+    void (*setAllMotorsPointer)(int, _Bool),
     int updatefrequency_par);
 void writeESCs(int value, bool facalibrationlse);
 bool ready;

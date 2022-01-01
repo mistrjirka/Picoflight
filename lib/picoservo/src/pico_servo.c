@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 
-#include "pico_servo.h"
+#include "picoservo.h"
 #include "pico/time.h"
 #include "hardware/irq.h"
 #include "hardware/pwm.h"

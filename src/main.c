@@ -26,7 +26,7 @@ int main()
 #ifdef MOTOR1
 
         init_ESC_PWM(MOTOR1, DIVIDER, STOP_PULSE_PWM, MIN_PULSE_PWM, MAX_PULSE_PWM, IDLE_PULSE_PWM, ESC_CALIB_LOW, ESC_CALIB_HIGH);
-        void (*setAllMotors)(int) = &writeESCs;
+        void (*setAllMotors)(int, _Bool) = &writeESCs;
 #endif
         int throttle = 0;
         int mappedThrottle = 0;
@@ -36,7 +36,7 @@ int main()
 #elif defined RC_CRSF
     CRSF_init();
     int (*getChannel)(int) = &CRSF_getChannel;
-    int *channels[] = &CRSF_channels;
+
     int channelsLength = CRSF_channelsLength;
 #else
     SBUS_init();
@@ -44,7 +44,7 @@ int main()
 #endif
 
 #if defined FLIGHT_FLYING_WING
-    initModel(THROTTLE, ROLL, PITCH, YAW, *getChannel, *channels, channelsLength, &*setAllMotors, UPDATE_FREQUENCY);
+    initModel(THROTTLE, ROLL, PITCH, YAW, *getChannel, CRSF_channels, channelsLength, *setAllMotors, UPDATE_FREQUENCY);
 #endif
     printf("init completed\n");
     printf("restarted\n");

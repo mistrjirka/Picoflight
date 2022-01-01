@@ -58,12 +58,12 @@
 #define CRSF_RSSI_MAX 0
 #define CRSF_SNR_MIN (-30)
 #define CRSF_SNR_MAX 20
-int CRSF_channels[16];
+extern int CRSF_channels[16];
 bool CRSF_failsafe;
 bool CRSF_lost_frame;
 extern int CRSF_init();
 extern int CRSF_getChannel();
-extern int CRSF_channelsLength = 16;
+extern const int CRSF_channelsLength;
 bool CRSF_sync;
 
 enum CRSFDataOffset

@@ -2,19 +2,20 @@
 #include "pico/stdlib.h"
 #include "flyingwing.h" 
 #include "hardware/timer.h"
+#include "picoservo.h"
 
 int (*getChannel)(int);
-int *channels[];
-void (*setAllMotors)(void);
+int *channels[32];
+void (*setAllMotors)(int, _Bool);
 int throttle_chan = 3;
 int roll_chan = 1;
 int pitch_chan = 2;
 int yaw_chan = 4;
 int updatefrequency = 20;
 
-repeating_timer_callback_t updateControls()
+repeating_timer_callback_t updateControls(repeating_timer_t *rt)
 {
-    
+    return true;
 }
 
 void initModel(
@@ -23,12 +24,12 @@ void initModel(
     int pitch_chan_par,
     int yaw_chan_par,
     int (*channelFunction)(int),
-    int *channelsPointer[],
+    int channelsPointer[],
     int channelsLength,
-    void (*setAllMotorsPointer)(void),
+    void (*setAllMotorsPointer)(int, _Bool),
     int updatefrequency_par)
 {
-    *channels = *channelsPointer;
+    *channels = channelsPointer;
     getChannel = *channelFunction;
     setAllMotors = setAllMotorsPointer;
 
@@ -42,4 +43,3 @@ void initModel(
     struct repeating_timer timer;
     add_repeating_timer_ms((1/updatefrequency)*1000, updateControls, NULL, &timer);
 }
-

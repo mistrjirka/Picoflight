@@ -32,6 +32,7 @@ uint8_t CRSF_bufferRX[64];
 int CRSF_channels[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 int columnLength = 5;
 int columnIndex = 0;
+int const CRSF_channelsLength = 16;
 
 absolute_time_t last_byte_time;    // timestamp of last byte we received
 absolute_time_t current_byte_time; // timestamp of current byte we received, we then compare it with last_byte_time
