@@ -17,7 +17,6 @@ bool ready = false;
 
 void writeESCs(int value, bool calibration)
 {
-    printf("writing\n");
     if (value < min_pulse && !calibration)
     {
         value = min_pulse;
@@ -28,14 +27,11 @@ void writeESCs(int value, bool calibration)
     }
     for (int i = 0; i < esc_length; i++)
     {
-        printf("Motor: %d\n", i);
         int esc = escs[i];
         int chann = pwm_gpio_to_channel(esc);
         int slice = pwm_gpio_to_slice_num(esc);
-        printf("val: %d\n", value);
         pwm_set_chan_level(slice, chann, value);
     }
-    printf("end of writing\n");
 }
 
 // for now analog, todo: blheli (probably with pio)

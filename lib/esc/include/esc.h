@@ -7,3 +7,4 @@ void updateControls(
     int pitch_chan,
     int yaw_chan,
     int arm_chan);
+void writeESCs(int value, bool calibration);

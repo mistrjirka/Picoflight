@@ -26,7 +26,6 @@
 int CRSF_chars_rxed = 0;
 uint8_t CRSF_bufferValidity[1] = {0};
 bool CRSF_sync = false;
-bool CRSF_lost_frame = false, CRSF_failsafe = false;
 bool CRSF_preSync = false;
 uint8_t CRSF_bufferRX[64];
 int CRSF_channels[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -37,6 +36,8 @@ int const CRSF_channelsLength = 16;
 absolute_time_t last_byte_time;    // timestamp of last byte we received
 absolute_time_t current_byte_time; // timestamp of current byte we received, we then compare it with last_byte_time
 absolute_time_t framestart;        // timestamp of start of frame it will be compared to the current time (not variable), to check for timeout
+absolute_time_t CRSF_lastRCPacket;
+
 bool first_byte_rx = false;        // when we run the CRSF_on_uart_rx there will not be any information about last_byte_time, so we need to wait for one cycle
 int64_t time_diff = 0;             // time difference between last_byte_time and current_byte_time
 crsfFrameDef_t Frame;              // current crsf Frame
@@ -144,7 +145,8 @@ void CRSF_on_uart_rx() // IRQ handler, called when there are data on UART port
             {
             case CRSF_FRAMETYPE_RC_CHANNELS_PACKED:
                 //if this is rc frame
-                printf("RC frame received\n");
+                CRSF_lastRCPacket = get_absolute_time();
+
                 const crsfPayloadRcChannelsPacked_t *const rcChannels = (crsfPayloadRcChannelsPacked_t *)&Frame.payload;
                 uint8_t channelScale = CRSF_RC_CHANNEL_SCALE_LEGACY;
                 CRSF_channels[0] = rcChannels->chan0;
@@ -163,7 +165,7 @@ void CRSF_on_uart_rx() // IRQ handler, called when there are data on UART port
                 CRSF_channels[13] = rcChannels->chan13;
                 CRSF_channels[14] = rcChannels->chan14;
                 CRSF_channels[15] = rcChannels->chan15;
-                printf("Channel 1: %d\n", CRSF_channels[0]);
+               /* printf("Channel 1: %d\n", CRSF_channels[0]);
                 printf("Channel 2: %d\n", CRSF_channels[1]);
                 printf("Channel 3: %d\n", CRSF_channels[2]);
                 printf("Channel 4: %d\n", CRSF_channels[3]);
@@ -173,7 +175,7 @@ void CRSF_on_uart_rx() // IRQ handler, called when there are data on UART port
                 printf("Channel 8: %d\n", CRSF_channels[7]);
                 printf("Channel 9: %d\n", CRSF_channels[8]);
                 printf("Channel 10: %d\n", CRSF_channels[9]);
-                printf("Channel 11: %d\n", CRSF_channels[10]);
+                printf("Channel 11: %d\n", CRSF_channels[10]);*/
                 break;
             case CRSF_FRAMETYPE_SUBSET_RC_CHANNELS_PACKED:
                 break;
@@ -214,9 +216,16 @@ void CRSF_on_uart_rx() // IRQ handler, called when there are data on UART port
     }
 }
 
+bool CRSF_failsafe()
+{
+    int64_t current_time = get_absolute_time();
+    int64_t time = absolute_time_diff_us(CRSF_lastRCPacket, current_time);
+    return time > CRSF_FAILSAFE_STAGE1_US;
+}
+
 int CRSF_getChannel(int channel)
 {
-    if (channel < 17)
+    if (channel < 15)
     {
         return CRSF_channels[channel - 1];
     }
@@ -226,6 +235,10 @@ int CRSF_getChannel(int channel)
     }
 }
 
+crsfLink_t CRSF_getLinkStatus()
+{
+    return LinkStatus;
+}
 int CRSF_init()
 {
     int baud = uart_init(CRSF_UART_ID, CRSF_BAUD_RATE);

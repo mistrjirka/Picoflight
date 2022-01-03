@@ -25,8 +25,8 @@
 static char chars_rxed = 0;
 static int chars_packet_length = 0;
 uint8_t bufferValidity[1] = {0};
-bool sync = false;
-bool lost_frame = false, failsafe = false;
+bool SBUS_sync = false;
+bool SBUS_lost_frame = false, SBUS_failsafe = false;
 
 uint8_t bufferRX[26] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 int channels[18] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -34,18 +34,18 @@ int channels[18] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 void on_uart_rx()
 {
     // printf("uart rx %d \n", chars_packet_length);
-    while (uart_is_readable(UART_ID))
+    while (uart_is_readable(SBUS_UART_ID))
     {
 
-        uint8_t ch = uart_getc(UART_ID);
-        if (sync)
+        uint8_t ch = uart_getc(SBUS_UART_ID);
+        if (SBUS_sync)
         {
             bufferRX[chars_packet_length] = ch;
             chars_packet_length++;
         }
         chars_rxed++;
         if(ch == 15){
-            sync = true;
+            SBUS_sync = true;
         }
         
     }
@@ -55,7 +55,7 @@ void on_uart_rx()
         int channel = 0;
         bool ignore = false;
 
-        if (sync)
+        if (SBUS_sync)
         {
             channels[0] = (uint16_t)((bufferRX[0] | bufferRX[1] << 8) & 0x07FF);
             channels[1] = (uint16_t)((bufferRX[1] >> 3 | bufferRX[2] << 5) & 0x07FF);
@@ -73,16 +73,16 @@ void on_uart_rx()
             channels[13] = (uint16_t)((bufferRX[17] >> 7 | bufferRX[18] << 1 | bufferRX[19] << 9) & 0x07FF);
             channels[14] = (uint16_t)((bufferRX[19] >> 2 | bufferRX[20] << 6) & 0x07FF);
             channels[15] = (uint16_t)((bufferRX[20] >> 5 | bufferRX[21] << 3) & 0x07FF);
-            channels[16] = bufferRX[22] & CH17_MASK_;
+            channels[16] = bufferRX[22] & SBUS_CH17_MASK_;
             /* CH 18 */
-            channels[17] = bufferRX[22] & CH18_MASK_;
+            channels[17] = bufferRX[22] & SBUS_CH18_MASK_;
             /* Grab the lost frame */
-            lost_frame = bufferRX[22] & LOST_FRAME_MASK_;
+            SBUS_lost_frame = bufferRX[22] & SBUS_LOST_FRAME_MASK_;
             /* Grab the failsafe */
-            failsafe = bufferRX[22] & FAILSAFE_MASK_;
+            SBUS_failsafe = bufferRX[22] & SBUS_FAILSAFE_MASK_;
             //printf("%x", bufferRX[22]);
             //printf("%x", FAILSAFE_MASK_);
-            sync = false;
+            SBUS_sync = false;
         }
         chars_packet_length = 0;
         
@@ -111,30 +111,28 @@ int SBUS_getChannel(int channel)
 
 int SBUS_init()
 {
-    int baud = uart_init(UART_ID, BAUD_RATE);
+    int baud = uart_init(SBUS_UART_ID, SBUS_BAUD_RATE);
 
-    gpio_set_function(UART_RX_PIN, GPIO_FUNC_UART);
-    gpio_set_inover(UART_RX_PIN, GPIO_OVERRIDE_INVERT);
+    gpio_set_function(SBUS_UART_RX_PIN, GPIO_FUNC_UART);
+    gpio_set_inover(SBUS_UART_RX_PIN, GPIO_OVERRIDE_INVERT);
 
-    uart_set_hw_flow(UART_ID, false, false);
+    uart_set_hw_flow(SBUS_UART_ID, false, false);
 
     // Set our data format
-    uart_set_format(UART_ID, DATA_BITS, STOP_BITS, PARITY);
+    uart_set_format(SBUS_UART_ID, SBUS_DATA_BITS, SBUS_STOP_BITS, SBUS_PARITY);
 
     // Turn off FIFO's - we want to do this character by character
-    uart_set_fifo_enabled(UART_ID, false);
+    uart_set_fifo_enabled(SBUS_UART_ID, false);
 
     // Set up a RX interrupt
     // We need to set up the handler first
     // Select correct interrupt for the UART we are using
-    int UART_IRQ = UART_ID == uart0 ? UART0_IRQ : UART1_IRQ;
+    int UART_IRQ = SBUS_UART_ID == uart0 ? UART0_IRQ : UART1_IRQ;
 
     // And set up and enable the interrupt handlers
     irq_set_exclusive_handler(UART_IRQ, on_uart_rx);
     irq_set_enabled(UART_IRQ, true);
 
     // Now enable the UART to send interrupts - RX only
-    uart_set_irq_enables(UART_ID, true, false);
-
-   
+    uart_set_irq_enables(SBUS_UART_ID, true, false);
 }

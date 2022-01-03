@@ -58,13 +58,8 @@
 #define CRSF_RSSI_MAX 0
 #define CRSF_SNR_MIN (-30)
 #define CRSF_SNR_MAX 20
-extern int CRSF_channels[16];
-bool CRSF_failsafe;
-bool CRSF_lost_frame;
-extern int CRSF_init();
-extern int CRSF_getChannel();
-extern const int CRSF_channelsLength;
-bool CRSF_sync;
+#define CRSF_FAILSAFE_STAGE1_US 300000
+
 
 enum CRSFDataOffset
 {
@@ -149,6 +144,11 @@ typedef struct crsfLink_s
     uint8_t SNR_downlink;
 } crsfLink_t;
 
-
-
+extern int CRSF_channels[16];
+bool CRSF_failsafe();
+crsfLink_t CRSF_getLinkStatus();
+extern int CRSF_init();
+extern int CRSF_getChannel();
+extern const int CRSF_channelsLength;
+bool CRSF_sync;
 #endif

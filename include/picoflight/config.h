@@ -15,6 +15,8 @@
 #define PITCH 2
 #define THROTTLE 3
 #define YAW 4
+#define ARM 5
+#define ARM_ABOVE 1000
 
 #define UPDATE_FREQUENCY 50 // hz
 
@@ -26,3 +28,6 @@
 #define IDLE_PULSE_PWM 1060
 #define ESC_CALIB_LOW 1000
 #define ESC_CALIB_HIGH 2000
+
+#define SERVOLEFT 7
+#define SERVORIGHT 6

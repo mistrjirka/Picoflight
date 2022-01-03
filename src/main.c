@@ -7,10 +7,7 @@
 #if defined FLIGHT_FLYING_WING         
     #include "flyingwing.h"
 #endif
-long mapThrottle(long x, long in_min, long in_max, long out_min, long out_max)
-{
-    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
-}
+
 int main()
 {
     stdio_init_all();
@@ -36,15 +33,32 @@ int main()
 #elif defined RC_CRSF
     CRSF_init();
     int (*getChannel)(int) = &CRSF_getChannel;
-
+    int *RC_channels[CRSF_channelsLength];
+    *RC_channels = CRSF_channels;
     int channelsLength = CRSF_channelsLength;
+    bool (*getFailsafe)(void) = &CRSF_failsafe;
+    printf("testFailsafe %d", CRSF_failsafe());
 #else
-    SBUS_init();
-    int (*getChannel)(int) = &SBUS_getChannel;
+        SBUS_init();
+        int (*getChannel)(int) = &SBUS_getChannel;
 #endif
 
 #if defined FLIGHT_FLYING_WING
-    initModel(THROTTLE, ROLL, PITCH, YAW, *getChannel, CRSF_channels, channelsLength, *setAllMotors, UPDATE_FREQUENCY);
+    initModel(
+        THROTTLE,
+        ROLL,
+        PITCH,
+        YAW,
+        ARM,
+        ARM_ABOVE,
+        *getChannel,
+        *RC_channels,
+        channelsLength,
+        *setAllMotors,
+        UPDATE_FREQUENCY,
+        *getFailsafe,
+        SERVOLEFT,
+        SERVORIGHT);
 #endif
     printf("init completed\n");
     printf("restarted\n");
@@ -53,18 +67,18 @@ int main()
     while (true)
     {
         tight_loop_contents();
-        //printf("nice\n");
-/*printf("%d \n",CRSF_sync);
-sleep_ms(20);*/
-#ifdef MOTOR1
-        if (ready)
-        {
+        printf("nice\n");
+        /*printf("%d \n",CRSF_sync);
+        sleep_ms(20);
+        #ifdef MOTOR1
+                if (ready)
+                {
 
-            throttle = (*getChannel)(THROTTLE);
-            mappedThrottle = mapThrottle(throttle, 172, 1810, 1000, 1800);
-            //printf("%d\n", throttle);
-            sleep_ms(20);
-        }
-        #endif
+                    throttle = (*getChannel)(THROTTLE);
+                    mappedThrottle = mapThrottle(throttle, 172, 1810, 1000, 1800);
+                    //printf("%d\n", throttle);
+                    sleep_ms(20);
+                }
+                #endif*/
     }
 }
