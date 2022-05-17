@@ -22,22 +22,29 @@ int main()
 
 #ifdef MOTOR1
 
-        init_ESC_PWM(MOTOR1, DIVIDER, STOP_PULSE_PWM, MIN_PULSE_PWM, MAX_PULSE_PWM, IDLE_PULSE_PWM, ESC_CALIB_LOW, ESC_CALIB_HIGH);
+       init_ESC_PWM(MOTOR1, DIVIDER, STOP_PULSE_PWM, MIN_PULSE_PWM, MAX_PULSE_PWM, IDLE_PULSE_PWM, ESC_CALIB_LOW, ESC_CALIB_HIGH);
         void (*setAllMotors)(int, _Bool) = &writeESCs;
 #endif
         int throttle = 0;
         int mappedThrottle = 0;
+#if defined VOLTAGE_SENSOR
+        initVoltage(27, 10);
+#endif
 #if defined RC_SBUS
     SBUS_init();
     int (*getChannel)(int) = &SBUS_getChannel;
-#elif defined RC_CRSF
-    CRSF_init();
-    int (*getChannel)(int) = &CRSF_getChannel;
     int *RC_channels[CRSF_channelsLength];
-    *RC_channels = CRSF_channels;
-    int channelsLength = CRSF_channelsLength;
-    bool (*getFailsafe)(void) = &CRSF_failsafe;
-    printf("testFailsafe %d", CRSF_failsafe());
+    int channelsLength = SBUS_NUM_CHANNELS;
+    *RC_channels = SBUS_channels;
+    bool (*getFailsafe)(void) = &SBUS_getFailsafe;
+#elif defined RC_CRSF
+        CRSF_init();
+        int (*getChannel)(int) = &CRSF_getChannel;
+        int *RC_channels[CRSF_channelsLength];
+        *RC_channels = CRSF_channels;
+        int channelsLength = CRSF_channelsLength;
+        bool (*getFailsafe)(void) = &CRSF_failsafe;
+        printf("testFailsafe %d", CRSF_failsafe());
 #else
         SBUS_init();
         int (*getChannel)(int) = &SBUS_getChannel;
@@ -67,7 +74,11 @@ int main()
     while (true)
     {
         tight_loop_contents();
-        printf("nice\n");
+/*#if defined VOLTAGE_SENSOR
+        printf("Hello there");
+        int voltage = getVoltage();
+#endif*/
+       // printf("nice\n");
         /*printf("%d \n",CRSF_sync);
         sleep_ms(20);
         #ifdef MOTOR1
